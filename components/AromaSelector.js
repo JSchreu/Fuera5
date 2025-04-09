@@ -1,168 +1,95 @@
 import { useState } from 'react';
 
-export default function AromaSelector({ label, type, onChange }) {
-  const [selectedAromas, setSelectedAromas] = useState([]);
+const AromaSelector = ({ selectedAromas, setSelectedAromas, type }) => {
   const [customAroma, setCustomAroma] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
-
+  
+  // Uitgebreide lijst met aroma's per categorie
   const aromaCategories = {
-    primair: {
-      fruit: [
-        'Citroen', 'Limoen', 'Grapefruit', 'Sinaasappel', 'Mandarijn',
-        'Groene appel', 'Rijpe appel', 'Peer', 'Kweepeer',
-        'Perzik', 'Abrikoos', 'Nectarine', 'Pruim',
-        'Banaan', 'Lychee', 'Mango', 'Meloen', 'Passievrucht', 'Ananas',
-        'Aardbei', 'Framboos', 'Rode bes', 'Cranberry', 'Kersen',
-        'Bramen', 'Bosbessen', 'Zwarte bessen', 'Zwarte kersen'
-      ],
-      bloemen: [
-        'Acacia', 'Vlierbloesem', 'Rozen', 'Geranium', 'Lavendel', 'Viooltjes'
-      ],
-      kruiden: [
-        'Witte peper', 'Zwarte peper', 'Kaneel', 'Gember', 'Nootmuskaat', 
-        'Kruidnagel', 'Venkel', 'Anijs'
-      ],
-      plantaardig: [
-        'Gras', 'Groene paprika', 'Asperge', 'Artisjok', 'Eucalyptus', 
-        'Munt', 'Tomatenblad'
-      ],
-      mineraal: [
-        'Vuursteen', 'Krijt', 'Leisteen', 'Natte stenen', 'Zout'
-      ]
-    },
-    secundair: {
-      gist: [
-        'Brood', 'Biscuit', 'Brioche', 'Gistdeeg'
-      ],
-      melkzuur: [
-        'Boter', 'Room', 'Yoghurt', 'Kaas'
-      ],
-      eik: [
-        'Vanille', 'Kokos', 'Ceder', 'Gerookt', 'Geroosterd', 
-        'Koffie', 'Chocolade', 'Karamel', 'Amandel', 'Hazelnoot'
-      ]
-    },
-    tertiair: {
-      oxidatief: [
-        'Amandel', 'Walnoot', 'Gedroogd fruit', 'Karamel', 'Koffie', 
-        'Chocolade', 'Leer'
-      ],
-      biologisch: [
-        'Paddenstoel', 'Truffel', 'Bosgrond', 'Natte bladeren', 'Wild', 'Stal'
-      ],
-      reductief: [
-        'Petroleum', 'Rubber', 'Rook', 'Teer', 'Tabak'
-      ]
-    }
+    primair: [
+      'Appel', 'Peer', 'Citroen', 'Limoen', 'Grapefruit', 'Sinaasappel',
+      'Perzik', 'Abrikoos', 'Ananas', 'Mango', 'Lychee', 'Passievrucht',
+      'Aardbei', 'Framboos', 'Kers', 'Pruim', 'Braam', 'Bosbes',
+      'Zwarte bessen', 'Rode bessen', 'Granaatappel', 'Vijg', 'Rozijn'
+    ],
+    secundair: [
+      'Boter', 'Room', 'Gist', 'Brood', 'Biscuit', 'Toast',
+      'Noot', 'Amandel', 'Hazelnoot', 'Kokos', 'Vanille', 'Karamel',
+      'Honing', 'Chocolade', 'Koffie', 'Kaneel', 'Kruidnagel', 'Nootmuskaat',
+      'Peper', 'Gember', 'Anijs', 'Venkel', 'Dille'
+    ],
+    tertiair: [
+      'Leer', 'Tabak', 'Ceder', 'Rook', 'Truffel', 'Paddenstoel',
+      'Natte bladeren', 'Bosgrond', 'Hout', 'Potloodslijpsel', 'Petroleum',
+      'Honing', 'Gedroogd fruit', 'Noten', 'Koffie', 'Chocolade'
+    ]
   };
 
-  const handleAromaSelect = (e) => {
+  // Functie om een aroma te selecteren uit het dropdown menu
+  const handleSelectAroma = (e) => {
     const value = e.target.value;
     
-    if (value === 'anders') {
+    if (value === 'custom') {
       setShowCustomInput(true);
       return;
     }
     
-    if (value && !selectedAromas.includes(value)) {
-      const newSelectedAromas = [...selectedAromas, value];
-      setSelectedAromas(newSelectedAromas);
-      onChange(newSelectedAromas);
+    if (value && value !== 'placeholder' && !selectedAromas.includes(value)) {
+      setSelectedAromas([...selectedAromas, value]);
+      // Reset de dropdown naar de placeholder optie
+      e.target.value = 'placeholder';
     }
   };
 
-  const handleCustomAromaAdd = () => {
+  // Functie om een eigen aroma toe te voegen
+  const handleAddCustomAroma = () => {
     if (customAroma && !selectedAromas.includes(customAroma)) {
-      const newSelectedAromas = [...selectedAromas, customAroma];
-      setSelectedAromas(newSelectedAromas);
-      onChange(newSelectedAromas);
+      setSelectedAromas([...selectedAromas, customAroma]);
       setCustomAroma('');
       setShowCustomInput(false);
     }
   };
 
+  // Functie om een aroma te verwijderen
   const handleRemoveAroma = (aroma) => {
-    const newSelectedAromas = selectedAromas.filter(a => a !== aroma);
-    setSelectedAromas(newSelectedAromas);
-    onChange(newSelectedAromas);
+    setSelectedAromas(selectedAromas.filter(a => a !== aroma));
+  };
+
+  // Functie om Enter toets te verwerken bij custom aroma input
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddCustomAroma();
+    }
   };
 
   return (
-    <div className="form-group">
-      <label className="form-label">{label}</label>
+    <div className="mb-4">
+      <label className="form-label">{type === 'geur' ? 'Aroma\'s (geur)' : 'Aroma\'s (smaak)'}</label>
       
       <div className="mb-2">
         <select 
           className="form-select" 
-          onChange={handleAromaSelect}
-          value=""
+          onChange={handleSelectAroma}
+          defaultValue="placeholder"
         >
-          <option value="">-- Selecteer aroma --</option>
-          <optgroup label="Primaire Aroma's">
-            <optgroup label="Fruit">
-              {aromaCategories.primair.fruit.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Bloemen">
-              {aromaCategories.primair.bloemen.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Kruiden/Specerijen">
-              {aromaCategories.primair.kruiden.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Plantaardig">
-              {aromaCategories.primair.plantaardig.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Mineraal">
-              {aromaCategories.primair.mineraal.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
+          <option value="placeholder">Selecteer aroma...</option>
+          <optgroup label="Primaire aroma's">
+            {aromaCategories.primair.map(aroma => (
+              <option key={`${type}-primair-${aroma}`} value={aroma}>{aroma}</option>
+            ))}
           </optgroup>
-          
-          <optgroup label="Secundaire Aroma's">
-            <optgroup label="Gist">
-              {aromaCategories.secundair.gist.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Melkzuur">
-              {aromaCategories.secundair.melkzuur.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Eik">
-              {aromaCategories.secundair.eik.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
+          <optgroup label="Secundaire aroma's">
+            {aromaCategories.secundair.map(aroma => (
+              <option key={`${type}-secundair-${aroma}`} value={aroma}>{aroma}</option>
+            ))}
           </optgroup>
-          
-          <optgroup label="Tertiaire Aroma's">
-            <optgroup label="Oxidatief">
-              {aromaCategories.tertiair.oxidatief.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Biologisch">
-              {aromaCategories.tertiair.biologisch.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
-            <optgroup label="Reductief">
-              {aromaCategories.tertiair.reductief.map(aroma => (
-                <option key={aroma} value={aroma}>{aroma}</option>
-              ))}
-            </optgroup>
+          <optgroup label="Tertiaire aroma's">
+            {aromaCategories.tertiair.map(aroma => (
+              <option key={`${type}-tertiair-${aroma}`} value={aroma}>{aroma}</option>
+            ))}
           </optgroup>
-          
-          <option value="anders">Anders, namelijk...</option>
+          <option value="custom">Anders, namelijk...</option>
         </select>
       </div>
       
@@ -170,15 +97,16 @@ export default function AromaSelector({ label, type, onChange }) {
         <div className="flex mb-2">
           <input
             type="text"
-            className="form-input flex-grow"
+            className="form-input mr-2"
             value={customAroma}
             onChange={(e) => setCustomAroma(e.target.value)}
-            placeholder="Voer een eigen aroma in"
+            onKeyPress={handleKeyPress}
+            placeholder="Voer eigen aroma in"
           />
           <button 
             type="button" 
-            className="ml-2 bg-wijn-blauw text-white px-3 py-2 rounded"
-            onClick={handleCustomAromaAdd}
+            className="btn-primary"
+            onClick={handleAddCustomAroma}
           >
             Toevoegen
           </button>
@@ -187,14 +115,14 @@ export default function AromaSelector({ label, type, onChange }) {
       
       {selectedAromas.length > 0 && (
         <div className="mt-2">
-          <p className="text-sm mb-1">Geselecteerde aroma's:</p>
+          <p className="text-sm font-medium mb-1">Geselecteerde aroma's:</p>
           <div className="flex flex-wrap gap-2">
             {selectedAromas.map(aroma => (
-              <div key={aroma} className="bg-wijn-lichtgroen px-3 py-1 rounded-full flex items-center">
-                <span className="text-sm">{aroma}</span>
+              <div key={`${type}-${aroma}`} className="bg-wijn-lichtgroen px-2 py-1 rounded flex items-center">
+                <span>{aroma}</span>
                 <button 
                   type="button"
-                  className="ml-2 text-wijn-donkergroen hover:text-wijn-rood"
+                  className="ml-2 text-wijn-rood"
                   onClick={() => handleRemoveAroma(aroma)}
                 >
                   ×
@@ -206,4 +134,6 @@ export default function AromaSelector({ label, type, onChange }) {
       )}
     </div>
   );
-}
+};
+
+export default AromaSelector;
