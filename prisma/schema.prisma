@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Gebruiker {
+  id           Int            @id @default(autoincrement())
+  naam         String
+  email        String         @unique
+  wachtwoord   String
+  proefnotities Proefnotitie[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Wijn {
+  id               Int            @id @default(autoincrement())
+  naam             String
+  wijnmaker        String
+  druif            String
+  vintage          Int
+  prijs            Float
+  alcoholpercentage Float
+  land             String
+  regio            String
+  proefnotities     Proefnotitie[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Proefnotitie {
+  id                      Int                       @id @default(autoincrement())
+  wijnId                  Int
+  wijn                    Wijn                      @relation(fields: [wijnId], references: [id])
+  gebruikerId             Int
+  gebruiker               Gebruiker                 @relation(fields: [gebruikerId], references: [id])
+  proefdatum              DateTime
+  medeproevers            String?
+  
+  // Uiterlijk
+  uiterlijkHelderheid     String
+  uiterlijkIntensiteit    String
+  uiterlijkKleur          String
+  uiterlijkAndereKenmerken String?
+  
+  // Geur
+  geurConditie            String
+  geurIntensiteit         String
+  geurOntwikkeling        String
+  
+  // Smaak
+  smaakZoetheid           String
+  smaakZuurgehalte        String
+  smaakTaninegehalte      String?
+  smaakAlcoholgehalte     String
+  smaakBody               String
+  smaakMousse             String?
+  smaakIntensiteit        String
+  smaakAfdronk            String
+  
+  // Conclusie
+  kwaliteitsniveau        String
+  drinkbaarheid           String
+  aantekeningen           String?
+  
+  // Relaties
+  aroma                   ProefnotitieAroma[]
+  
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+}
+
+model Aroma {
+  id           Int                @id @default(autoincrement())
+  categorie    String             // primair, secundair, tertiair
+  naam         String
+  beschrijving String?
+  proefnotities ProefnotitieAroma[]
+}
+
+model ProefnotitieAroma {
+  id             Int          @id @default(autoincrement())
+  proefnotitieId Int
+  proefnotitie   Proefnotitie @relation(fields: [proefnotitieId], references: [id])
+  aromaId        Int
+  aroma          Aroma        @relation(fields: [aromaId], references: [id])
+  type           String       // geur of smaak
+  andersNamelijk String?      // voor custom aroma's
+  
+  @@unique([proefnotitieId, aromaId, type])
+}

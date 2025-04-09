@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --wijn-rood: #e63946;
+  --wijn-blauw: #457b9d;
+  --wijn-lichtgroen: #a8dadc;
+  --wijn-donkergroen: #1d3557;
+  --wijn-beige: #f1faee;
+}
+
+body {
+  background-color: var(--wijn-beige);
+  color: var(--wijn-donkergroen);
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.btn-primary {
+  @apply bg-wijn-blauw text-white py-2 px-4 rounded hover:bg-wijn-donkergroen transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-wijn-lichtgroen text-wijn-donkergroen py-2 px-4 rounded hover:bg-wijn-beige border border-wijn-donkergroen transition-colors;
+}
+
+.form-input {
+  @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-wijn-blauw;
+}
+
+.form-select {
+  @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-wijn-blauw;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-wijn-donkergroen mb-1;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.section-title {
+  @apply text-xl font-bold text-wijn-rood mb-4 border-b border-wijn-lichtgroen pb-2;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md p-6 mb-6;
+}
+
+.navbar {
+  @apply bg-wijn-donkergroen text-white py-4;
+}
+
+.footer {
+  @apply bg-wijn-donkergroen text-white py-6 mt-12;
+}
