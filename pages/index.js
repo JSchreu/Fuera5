@@ -1,53 +1,145 @@
-import Head from 'next/head';
-import { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+// pages/api/proefnotities/index.js
+import prisma from '../../../lib/prisma';
 
-export default function Home() {
-  return (
-    <div>
-      <Head>
-        <title>Fuera Del Camino - Bedevaart naar goede wijn</title>
-        <meta name="description" content="Wijnproeftool voor wijnclub Fuera Del Camino" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+export default async function handler(req, res) {
+  if (req.method === 'POST') {
+    try {
+      const { 
+        wijnId, gebruikerId, proefdatum, medeproevers,
+        uiterlijkHelderheid, uiterlijkIntensiteit, uiterlijkKleur, uiterlijkAndereKenmerken,
+        geurConditie, geurIntensiteit, geurOntwikkeling,
+        smaakZoetheid, smaakZuurgehalte, smaakTaninegehalte, smaakAlcoholgehalte,
+        smaakBody, smaakMousse, smaakIntensiteit, smaakAfdronk,
+        kwaliteitsniveau, drinkbaarheid, aantekeningen,
+        geurAromas, smaakAromas
+      } = req.body;
 
-      <Navbar />
+      console.log('Ontvangen proefnotitie data:', req.body); // Debug logging
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-wijn-donkergroen mb-2">Fuera Del Camino</h1>
-          <p className="text-xl text-wijn-rood">Bedevaart naar goede wijn</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="card">
-            <h2 className="section-title">Nieuwe Wijn Proeven</h2>
-            <p className="mb-4">Voeg een nieuwe wijnproefnotitie toe volgens de WSET-methode.</p>
-            <a href="/proeven" className="btn-primary inline-block">Nieuwe Proefnotitie</a>
-          </div>
+      // Maak de proefnotitie aan
+      const proefnotitie = await prisma.proefnotitie.create({
+        data: {
+          wijnId,
+          gebruikerId,
+          proefdatum: new Date(proefdatum),
+          medeproevers,
           
-          <div className="card">
-            <h2 className="section-title">Wijnbibliotheek</h2>
-            <p className="mb-4">Bekijk alle geproefde wijnen in onze database.</p>
-            <a href="/wijnen" className="btn-primary inline-block">Bekijk Wijnen</a>
-          </div>
-        </div>
+          // Uiterlijk
+          uiterlijkHelderheid,
+          uiterlijkIntensiteit,
+          uiterlijkKleur,
+          uiterlijkAndereKenmerken,
+          
+          // Geur
+          geurConditie,
+          geurIntensiteit,
+          geurOntwikkeling,
+          
+          // Smaak
+          smaakZoetheid,
+          smaakZuurgehalte,
+          smaakTaninegehalte,
+          smaakAlcoholgehalte,
+          smaakBody,
+          smaakMousse,
+          smaakIntensiteit,
+          smaakAfdronk,
+          
+          // Conclusie
+          kwaliteitsniveau,
+          drinkbaarheid,
+          aantekeningen,
+        },
+      });
 
-        <div className="card">
-          <h2 className="section-title">Over Onze Wijnclub</h2>
-          <p className="mb-4">
-            Fuera Del Camino is een wijnclub voor liefhebbers die samen op ontdekkingstocht gaan naar bijzondere wijnen. 
-            Onze naam, "Buiten het Pad" in het Spaans, weerspiegelt onze filosofie: we verkennen wijnen die buiten de gebaande paden liggen.
-          </p>
-          <p>
-            Met onze WSET-gebaseerde proeftool houden we systematisch bij welke wijnen we hebben geproefd, 
-            delen we onze bevindingen, en bouwen we samen een waardevolle database op van wijnkennis.
-          </p>
-        </div>
-      </main>
+      // Voeg aroma's toe voor geur
+      if (geurAromas && geurAromas.length > 0) {
+        for (const aromaNaam of geurAromas) {
+          // Zoek of maak het aroma
+          let aroma = await prisma.aroma.findFirst({
+            where: { naam: aromaNaam }
+          });
+          
+          if (!aroma) {
+            aroma = await prisma.aroma.create({
+              data: {
+                categorie: 'primair', // Default categorie
+                naam: aromaNaam,
+                beschrijving: `Aroma: ${aromaNaam}`
+              }
+            });
+          }
+          
+          // Koppel het aroma aan de proefnotitie
+          await prisma.proefnotitieAroma.create({
+            data: {
+              proefnotitieId: proefnotitie.id,
+              aromaId: aroma.id,
+              type: 'geur'
+            }
+          });
+        }
+      }
 
-      <Footer />
-    </div>
-  );
+      // Voeg aroma's toe voor smaak
+      if (smaakAromas && smaakAromas.length > 0) {
+        for (const aromaNaam of smaakAromas) {
+          // Zoek of maak het aroma
+          let aroma = await prisma.aroma.findFirst({
+            where: { naam: aromaNaam }
+          });
+          
+          if (!aroma) {
+            aroma = await prisma.aroma.create({
+              data: {
+                categorie: 'primair', // Default categorie
+                naam: aromaNaam,
+                beschrijving: `Aroma: ${aromaNaam}`
+              }
+            });
+          }
+          
+          // Koppel het aroma aan de proefnotitie
+          await prisma.proefnotitieAroma.create({
+            data: {
+              proefnotitieId: proefnotitie.id,
+              aromaId: aroma.id,
+              type: 'smaak'
+            }
+          });
+        }
+      }
+
+      console.log('Proefnotitie succesvol opgeslagen met ID:', proefnotitie.id); // Debug logging
+
+      return res.status(201).json(proefnotitie);
+    } catch (error) {
+      console.error('Fout bij het aanmaken van proefnotitie:', error);
+      return res.status(500).json({ message: 'Er is een fout opgetreden bij het aanmaken van de proefnotitie', error: error.message });
+    }
+  } else if (req.method === 'GET') {
+    try {
+      const proefnotities = await prisma.proefnotitie.findMany({
+        include: {
+          wijn: true,
+          gebruiker: true,
+          ProefnotitieAroma: {
+            include: {
+              aroma: true
+            }
+          }
+        },
+        orderBy: {
+          proefdatum: 'desc'
+        }
+      });
+      
+      return res.status(200).json(proefnotities);
+    } catch (error) {
+      console.error('Fout bij het ophalen van proefnotities:', error);
+      return res.status(500).json({ message: 'Er is een fout opgetreden bij het ophalen van proefnotities', error: error.message });
+    }
+  }
+  
+  return res.status(405).json({ message: 'Method not allowed' });
 }
